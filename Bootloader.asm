@@ -14,15 +14,14 @@ mov sp, bp			; idk
 mov bx, 0x7e00			; Add to BX addres of 'A' symbol
 ; Stack settings end
 
-jmp CLS				; Jump to CLS
-
-mov ah, 0x0e			; Set ah to 0x0e and print char
+call CLS			; Call CLS
+call SLEEP			; Call SLEEP
 mov si, MSG			; Set si to MSG addres
-jmp PRINT			; Jump to PRINT
+call PRINT			; Jump to PRINT
 jmp WAIT_KEY			; Jump to WAIT_KEY
 
 WAIT_KEY:
-   	in al, 0x60         	; Get input from keyboard
+   	in al, 0x60		; Use interrupt
    	cmp al, 0x3F        	; Check if F5 was pressed
    	je BOOT_SYSTEM		; If so then jump to BOOT_SYSTEM
 	cmp al, 0x01		; Check if ESC was pressed
@@ -30,10 +29,9 @@ WAIT_KEY:
    	jmp WAIT_KEY    	; Otherwise go back to WAIT_KEY label
 
 OFF:
-	mov ah, 0x0e		; Set ah to 0x0e and print char
 	mov si, OFFMSG		; Set si to OFFMSG addres
-	jmp PRINT		; Jump to PRINT
-	jmp SLEEP		; Jump to SLEEP
+	call PRINT		; Jump to PRINT
+	call SLEEP		; Jump to SLEEP
 	mov ax, 0x5307 		; Power management
     	mov bx, 0x0001 		; Power management of all devices
     	mov cx, 0x0003 		; Off
@@ -48,17 +46,18 @@ BOOT_SYSTEM:
 	int 0x13		; Use interrupt
 
 	mov ah, 0x0e		; Set function to write character
-	mov al, [bx]		; Set al to 'A'
+	mov al, [0x7e00]	; Set al to 'A'
 	int 0x10		; Use interrupt
 
 
 PRINT:
-    	mov al, [si]		; Load to al character in si
-    	cmp al, 0			; if AL == 0 then jump to BREAK
-    	je BREAK			; Jump to BREAK
-    	int 0x10			; Interrupt
+	mov ah, 0x0e		; Set AH to print text
+    	mov al, [si]		; Load to AL character in SI
+    	cmp al, 0		; if AL == 0 then jump to BREAK
+    	je BREAK		; Jump to BREAK
+    	int 0x10		; Interrupt
     	inc si			; SI = SI + 1
-    	jmp PRINT			; Jump to PRINT
+    	jmp PRINT		; Jump to PRINT
 SLEEP:
 	mov ah, 0x86		; Function to sleep
     	mov cx, 0x0F		; Microseconds time
