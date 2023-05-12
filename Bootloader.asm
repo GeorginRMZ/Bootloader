@@ -3,34 +3,38 @@
 [cpu 8086]				; Set CPU config
 [bits 16]				; Set program mode
 
+mov [BOOT_DISK], dl     ; Move number of boot disk to BOOT_DISK           
+
+; Setting up the stack
+xor ax, ax              ; AX = 0           
+mov es, ax				; ES = 0
+mov ds, ax				; DS = 0
+mov bp, 0x8000			; idk
+mov sp, bp				; idk
+mov bx, 0x7e00			; Add to BX addres of 'A' symbol
+; Stack settings end
+
 mov ax, 03	 			; Clear display
 int 0x10				; Use interrupt
 
 mov ah, 0x0e			; Set ah to 0x0e and print char
-mov bx, MSG				; Set bx to MSG addres
+mov si, MSG				; Set si to MSG addres
 
 PRINT:
-    mov al, [bx]		; Load to al character in bx
+    mov al, [si]		; Load to al character in si
     cmp al, 0			; if al == 0 then jump to WAIT_KEY
     je WAIT_KEY			; Jump to WAIT_KEY to wait key from user
     int 0x10			; Interrupt
-    inc bx				; BX = BX + 1
+    inc si				; SI = SI + 1
     jmp PRINT			; Jump to PRINT
 
 WAIT_KEY:
-   	in al, 0x60         ; Get keyboard input
-   	cmp al, 0xBF        ; Check if the user realises the F5 key
-   	je LOOP             ; If so then jump to loop
-	cmp al, 0x81		; Check if the user realises the ESC key		
-	je LOOP				; If so then jump to loop
-   	jmp WAIT_KEY		; Jump to WAIT_KEY
-LOOP:
    	in al, 0x60         ; Get input from keyboard
    	cmp al, 0x3F        ; Check if F5 was pressed
    	je BOOT_SYSTEM		; If so then jump to BOOT_SYSTEM
 	cmp al, 0x01		; Check if ESC was pressed
 	je REBOOT			; If so then jump to REBOOT
-   	jmp LOOP    		; Otherwise go back to loop label
+   	jmp WAIT_KEY    	; Otherwise go back to wait_key label
 
 REBOOT:
 	int 0x19			; Interrupt to reboot PC
@@ -48,7 +52,7 @@ BOOT_SYSTEM:
 	int 0x10			; Use interrupt
 
 MSG: 
-	db 'Press F5 to run OS and press ESC to reboot PC', 0
+	db 'Press F5 to run OS or press ESC to reboot PC: ', 0
 BOOTMSG:
 	db 'OS is starting...', 0
 BOOT_DISK: db 0
