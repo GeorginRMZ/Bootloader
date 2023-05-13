@@ -11,7 +11,7 @@ mov es, ax			; ES = 0
 mov ds, ax			; DS = 0
 mov bp, 0x8000			; idk
 mov sp, bp			; idk
-mov bx, 0x7e00			; Add to BX addres of 'A' symbol
+; mov bx, 0x7e00		; Add to BX addres of 'A' symbol
 ; Stack settings end
 
 call CLS			; Call CLS
@@ -21,7 +21,7 @@ call PRINT			; Jump to PRINT
 jmp WAIT_KEY			; Jump to WAIT_KEY
 
 WAIT_KEY:
-   	in al, 0x60		; Use interrupt
+    	in al, 0x60		; Use interrupt
    	cmp al, 0x3F        	; Check if F5 was pressed
    	je BOOT_SYSTEM		; If so then jump to BOOT_SYSTEM
 	cmp al, 0x01		; Check if ESC was pressed
@@ -37,17 +37,31 @@ OFF:
     	mov cx, 0x0003 		; Off
     	int 0x15		; Use interrupt
 BOOT_SYSTEM:
-	mov ah, 2		; Set ah to 2 for read function
-	mov al, 1		; Read 1 sector
-	mov ch, 0		; Set reading cylinder
-	mov dh, 0		; Set head number to read
-	mov cl, 2		; Sector number to read
-	mov dl, [BOOT_DISK]	; Set drive number
-	int 0x13		; Use interrupt
+	mov si, BOOTMSG
+	call PRINT		; Call print
+	call SLEEP		; Call sleep
 
-	mov ah, 0x0e		; Set function to write character
-	mov al, [0x7e00]	; Set al to 'A'
-	int 0x10		; Use interrupt
+    	cli
+    	xor ax, ax
+    	mov ds, ax
+    	mov ss, ax
+    	mov es, ax
+    	mov fs, ax
+    	mov gs, ax
+    	mov sp, 0x6ef0
+    	sti
+
+    	mov ah, 0		; Set AH to 0
+    	int 0x13		; Reset disk system
+
+    	mov bx, 0x7e00 		; Set BX
+    	mov al, 1		; Read 1 sector
+    	mov ch, 0		; Set reading cylinder
+    	mov dh, 0		; Set head number to read
+    	mov cl, 2		; Sector number to read
+    	mov ah, 2		; Set ah to 2 for read function
+    	int 0x13		; Use interrupt
+    	jmp 0x7e00		; Jump to OS
 
 
 PRINT:
@@ -87,6 +101,6 @@ OFFMSG:
 	db 'Computer shutting down...', 0xA, 0xD, 0
 BOOT_DISK: db 0
 
-TIMES 510-($-$$) db 0		; Fill butes to zeroes to 510 byte
-dw 0xAA55			; Set 511 and 512 bytes
-TIMES 512 db 'A'		; Fill sector of 'A'
+TIMES 510-($-$$) db 0	; Fill butes to zeroes to 510 byte
+dw 0xAA55				; Set 511 and 512 bytes
+; TIMES 512 db 'A'		; Fill sector of 'A'
