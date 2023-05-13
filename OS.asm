@@ -91,9 +91,9 @@ BREAK:
 	ret			; Return
 
 HEY:
-    db 'Welcome to SimpleOS', 0xA, 0xD, 0
+    	db 'Welcome to SimpleOS', 0xA, 0xD, 0
 KEYS:
-    db 'Press special keys to change colors', 0xA, 0xD, 0
+    	db 'Press special keys to change colors', 0xA, 0xD, 0
 OFFMSG:
-	db 'Computer shutting down...', 0xA, 0xD, 0
+    	db 'Computer shutting down...', 0xA, 0xD, 0
 TIMES 512-($-$$) db 0
