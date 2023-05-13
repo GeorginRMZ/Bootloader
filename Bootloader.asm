@@ -101,6 +101,5 @@ OFFMSG:
 	db 'Computer shutting down...', 0xA, 0xD, 0
 BOOT_DISK: db 0
 
-TIMES 510-($-$$) db 0	; Fill butes to zeroes to 510 byte
-dw 0xAA55				; Set 511 and 512 bytes
-; TIMES 512 db 'A'		; Fill sector of 'A'
+TIMES 510-($-$$) db 0		; Fill butes to zeroes to 510 byte
+dw 0xAA55			; Set 511 and 512 bytes
